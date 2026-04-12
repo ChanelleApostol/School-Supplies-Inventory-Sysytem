@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>C.A.L.M Inventory System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root{--bg:#0b0b14;--surface:#13132a;--s2:#1a1a35;--s3:#22223f;--border:#2a2a50;--accent:#6c63ff;--adim:rgba(108,99,255,.15);--aglow:rgba(108,99,255,.35);--success:#22d3a0;--warning:#f5a623;--danger:#ff4d6d;--info:#38bdf8;--text:#e8e8f0;--muted:#6a6a9a;--fd:'Space Grotesk',sans-serif;--fb:'DM Sans',sans-serif;--r:12px;--rs:8px;--sh:0 8px 32px rgba(0,0,0,.6)}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+    ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+    @keyframes slideIn{from{transform:translateX(110%);opacity:0}to{transform:none;opacity:1}}
+    @keyframes popIn{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+
+    .page{display:none}.page.active{display:block;animation:fadeUp .32s ease both}
+
+    /* Skeleton */
+    .skel{background:linear-gradient(90deg,var(--s2) 25%,var(--s3) 50%,var(--s2) 75%);background-size:600px 100%;animation:shimmer 1.4s infinite linear;border-radius:6px}
+    .skel-text{height:13px;border-radius:4px;margin-bottom:8px}
+    .skel-val{height:34px;border-radius:6px;width:65%}
+    .skel-row{height:51px;border-radius:0;width:100%;margin-bottom:1px}
+    .skel-card{height:105px;border-radius:var(--r)}
+
+    /* Navbar */
+    .navbar{background:rgba(19,19,42,.93)!important;border-bottom:1px solid var(--border);padding:.7rem 1.5rem;position:sticky;top:0;z-index:1000;backdrop-filter:blur(16px)}
+    .navbar-brand{font-family:var(--fd);font-weight:700;font-size:1.1rem;color:var(--text)!important;letter-spacing:-.3px;display:flex;align-items:center;gap:.5rem}
+    .brand-icon{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;color:#fff;box-shadow:0 0 14px var(--aglow)}
+    .nav-link{font-family:var(--fb);font-weight:500;color:var(--muted)!important;padding:.42rem .85rem!important;border-radius:var(--rs);transition:all .18s;font-size:.85rem;display:flex;align-items:center;gap:5px}
+    .nav-link:hover{color:var(--text)!important;background:var(--s2)}.nav-link.active{color:var(--accent)!important;background:var(--adim)}
+
+    /* Hero */
+    .hero{background:linear-gradient(135deg,var(--surface) 0%,#0e0e26 100%);border-bottom:1px solid var(--border);padding:2.8rem 0 2.2rem;position:relative;overflow:hidden}
+    .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 55% 80% at 80% 50%,rgba(108,99,255,.28),transparent 70%);pointer-events:none}
+    .hero-eyebrow{font-size:.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--accent);font-weight:500;margin-bottom:.45rem}
+    .hero-title{font-family:var(--fd);font-size:clamp(1.8rem,4vw,2.6rem);font-weight:700;letter-spacing:-1px;line-height:1.1}
+    .hero-title span{color:var(--accent)}.hero-sub{color:var(--muted);font-size:.9rem;margin-top:.5rem}
+
+    /* Stat cards */
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.4rem;position:relative;overflow:hidden;transition:transform .2s,border-color .2s,box-shadow .2s}
+    .stat-card:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:var(--sh)}
+    .stat-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:99px}
+    .stat-card.c-green::before{background:var(--success)}.stat-card.c-purple::before{background:var(--accent)}
+    .stat-card.c-amber::before{background:var(--warning)}.stat-card.c-red::before{background:var(--danger)}
+    .stat-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin-bottom:.85rem}
+    .stat-card.c-green .stat-icon{background:rgba(34,211,160,.12);color:var(--success)}
+    .stat-card.c-purple .stat-icon{background:var(--adim);color:var(--accent)}
+    .stat-card.c-amber .stat-icon{background:rgba(245,166,35,.12);color:var(--warning)}
+    .stat-card.c-red .stat-icon{background:rgba(255,77,109,.12);color:var(--danger)}
+    .stat-label{font-size:.7rem;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:.3rem}
+    .stat-value{font-family:var(--fd);font-size:1.85rem;font-weight:700;color:var(--text);line-height:1;animation:fadeUp .4s ease}
+
+    /* Panels */
+    .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1.4rem}
+    .panel-header{background:var(--s2);border-bottom:1px solid var(--border);padding:.8rem 1.2rem;display:flex;align-items:center;justify-content:space-between;font-family:var(--fd);font-weight:600;font-size:.88rem;color:var(--text)}
+    .panel-body{padding:1.2rem}
+
+    /* Forms */
+    .form-label{font-size:.74rem;font-weight:500;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:.35rem;display:block}
+    .form-control,.form-select{background:var(--s2);border:1px solid var(--border);color:var(--text);border-radius:var(--rs);padding:.58rem .88rem;font-family:var(--fb);font-size:.88rem;transition:border-color .18s,box-shadow .18s;width:100%}
+    .form-control:focus,.form-select:focus{background:var(--s2);border-color:var(--accent);color:var(--text);box-shadow:0 0 0 3px var(--aglow);outline:none}
+    .form-control::placeholder{color:var(--muted)}.form-select option{background:var(--s2);color:var(--text)}
+
+    /* Buttons */
+    .btn{font-family:var(--fb);font-weight:500;border-radius:var(--rs);padding:.48rem 1.05rem;font-size:.85rem;transition:all .18s;display:inline-flex;align-items:center;gap:5px;border:none;cursor:pointer;white-space:nowrap}
+    .btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#5b52e0;box-shadow:0 0 22px var(--aglow)}
+    .btn-success{background:var(--success);color:#0b170f}.btn-success:hover{background:#18b88a}
+    .btn-warning{background:var(--warning);color:#170f00}.btn-warning:hover{background:#d99218}
+    .btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:#d93558}
+    .btn-info{background:var(--info);color:#071420}.btn-info:hover{background:#28a9d8}
+    .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}.btn-ghost:hover{background:var(--s2);color:var(--text);border-color:var(--accent)}
+    .btn-sm{padding:.28rem .7rem;font-size:.78rem}.btn-icon{padding:.38rem .58rem}
+
+    /* Tables */
+    .tbl{width:100%;border-collapse:collapse}
+    .tbl thead th{background:var(--s2);color:var(--muted);font-size:.7rem;letter-spacing:1.4px;text-transform:uppercase;font-weight:500;padding:.72rem 1rem;border-bottom:1px solid var(--border)}
+    .tbl thead th.sortable{cursor:pointer;user-select:none}.tbl thead th.sortable:hover{color:var(--text)}
+    .tbl thead th.sort-asc::after{content:' ↑';color:var(--accent)}.tbl thead th.sort-desc::after{content:' ↓';color:var(--accent)}
+    .tbl tbody td{padding:.82rem 1rem;border-bottom:1px solid var(--border);color:var(--text);font-size:.855rem;vertical-align:middle}
+    .tbl tbody tr:last-child td{border-bottom:none}.tbl tbody tr:hover td{background:rgba(108,99,255,.06)}
+    .tbl tfoot td{padding:.72rem 1rem;background:var(--s2);border-top:1px solid var(--border);font-weight:600;font-size:.855rem}
+    .tbl-wrap{overflow-x:auto}
+
+    /* Badges */
+    .qty-badge{display:inline-block;background:var(--adim);color:var(--accent);border-radius:99px;padding:.13rem .62rem;font-size:.78rem;font-weight:600}
+    .qty-badge.low{background:rgba(245,166,35,.15);color:var(--warning)}
+    .qty-badge.zero{background:rgba(255,77,109,.2);color:var(--danger);font-weight:700;animation:pulse 2s infinite}
+    .id-badge{color:var(--muted);font-size:.76rem;font-family:var(--fd)}
+    .status-badge{display:inline-flex;align-items:center;gap:4px;border-radius:99px;padding:.13rem .62rem;font-size:.73rem;font-weight:600}
+    .status-badge.in-stock{background:rgba(34,211,160,.14);color:var(--success)}
+    .status-badge.low-stock{background:rgba(245,166,35,.14);color:var(--warning)}
+    .status-badge.out-stock{background:rgba(255,77,109,.14);color:var(--danger);animation:pulse 2s infinite}
+
+    /* Alert */
+    .alert-error{background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.3);color:var(--danger);border-radius:var(--rs);padding:.68rem 1rem;font-size:.855rem;margin-bottom:1rem;display:none}
+    .alert-error.show{display:block;animation:fadeUp .2s}
+
+    /* Toast */
+    #toast-container{position:fixed;bottom:1.4rem;right:1.4rem;z-index:9999;display:flex;flex-direction:column;gap:.45rem}
+    .toast-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:.72rem 1rem;font-size:.855rem;color:var(--text);display:flex;align-items:center;gap:.5rem;box-shadow:var(--sh);animation:slideIn .28s cubic-bezier(.22,.68,0,1.2) both;min-width:230px;max-width:340px}
+    .toast-item.t-success{border-left:3px solid var(--success)}.toast-item.t-danger{border-left:3px solid var(--danger)}
+    .toast-item.t-warning{border-left:3px solid var(--warning)}.toast-item.t-info{border-left:3px solid var(--info)}
+
+    /* Overlay */
+    #loadingOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+    #loadingOverlay.active{display:flex}
+    .spinner{width:38px;height:38px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .65s linear infinite}
+
+    /* Modals */
+    .modal-bd{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:8000;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(6px)}
+    .modal-bd.active{display:flex}
+    .modal-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);width:100%;max-width:480px;padding:1.65rem;box-shadow:var(--sh);animation:popIn .22s ease both}
+    .modal-box.lg{max-width:600px}
+    .modal-title{font-family:var(--fd);font-weight:700;font-size:1.05rem;color:var(--text);margin-bottom:1.2rem;display:flex;align-items:center;gap:.5rem}
+
+    /* Search */
+    .sw{position:relative}.sw .si{position:absolute;left:.82rem;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-size:.9rem}
+    .sw input{padding-left:2.35rem}
+
+    /* Pagination */
+    .pager-wrap{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;background:var(--s2);border-top:1px solid var(--border);font-size:.78rem;color:var(--muted);flex-wrap:wrap;gap:.5rem}
+    .pager-btns{display:flex;gap:3px}
+    .pg-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:var(--rs);padding:.22rem .6rem;font-size:.78rem;cursor:pointer;transition:all .14s}
+    .pg-btn:hover:not(:disabled){border-color:var(--accent);color:var(--text)}.pg-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+    .pg-btn:disabled{opacity:.35;cursor:not-allowed}
+
+    /* Charts */
+    .chart-wrap{padding:1rem}.chart-wrap canvas{max-height:255px}
+
+    /* Row tints */
+    tr.row-low td{background:rgba(245,166,35,.04)}tr.row-out td{background:rgba(255,77,109,.04)}
+
+    /* About */
+    .member-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:1.4rem;text-align:center;transition:border-color .2s,transform .2s}
+    .member-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:var(--sh)}
+    .member-avatar{width:54px;height:54px;background:var(--adim);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin:0 auto .7rem}
+    .member-name{font-family:var(--fd);font-weight:600;font-size:.855rem;color:var(--text)}
+    .tech-badge{display:inline-flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--border);border-radius:99px;padding:.28rem .72rem;font-size:.76rem;color:var(--muted);margin:.22rem}
+
+    /* Terms */
+    .terms-sec{margin-bottom:1.4rem}
+    .terms-sec h5{font-family:var(--fd);font-weight:600;font-size:.88rem;color:var(--accent);margin-bottom:.45rem;display:flex;align-items:center;gap:.5rem}
+    .terms-sec p,.terms-sec li{color:var(--muted);font-size:.855rem;line-height:1.72}.terms-sec ul{padding-left:1.2rem}
+    .form-check-input{background-color:var(--s2);border-color:var(--border)}.form-check-input:checked{background-color:var(--accent);border-color:var(--accent)}
+    .form-check-label{color:var(--muted);font-size:.855rem}
+
+    /* Footer */
+    footer{border-top:1px solid var(--border);padding:1.4rem;text-align:center;color:var(--muted);font-size:.75rem;margin-top:2.5rem}
+    footer a{color:var(--accent);text-decoration:none}
+
+    /* Util */
+    .text-accent{color:var(--accent)!important}.text-success{color:var(--success)!important}.text-warning{color:var(--warning)!important}
+    .text-danger{color:var(--danger)!important}.text-muted{color:var(--muted)!important}
+    .text-end{text-align:right}.text-center{text-align:center}
+    .fw-mono{font-family:'Space Grotesk',monospace}
+    .container{max-width:1100px;margin:0 auto;padding:0 1.2rem}
+    .mt-page{margin-top:1.8rem}
+    .empty-state{color:var(--muted);font-size:.855rem;padding:2.5rem;text-align:center}
+    .d-flex{display:flex}.align-items-center{align-items:center}.justify-content-end{justify-content:flex-end}
+    .justify-content-md-end{justify-content:flex-end}
+    .gap-2{gap:.5rem}.gap-1{gap:.25rem}.w-100{width:100%}
+    .mb-0{margin-bottom:0!important}.mb-3{margin-bottom:1rem}.mb-4{margin-bottom:1.5rem}
+    .ms-1{margin-left:.25rem}.ms-auto{margin-left:auto}.me-2{margin-right:.5rem}.mt-3{margin-top:1rem}
+    .row{display:flex;flex-wrap:wrap;margin-left:-.75rem;margin-right:-.75rem}
+    .g-3>*{padding:.75rem}.g-2>*{padding:.5rem}
+    .col-6{width:50%;flex:0 0 50%}.col-12{width:100%;flex:0 0 100%}
+    @media(min-width:768px){.col-md-2{width:16.66%;flex:0 0 16.66%}.col-md-3{width:25%;flex:0 0 25%}.col-md-4{width:33.33%;flex:0 0 33.33%}.col-md-5{width:41.66%;flex:0 0 41.66%}.col-md-6{width:50%;flex:0 0 50%}.col-md-12{width:100%;flex:0 0 100%}.align-items-md-end{align-items:flex-end}}
+    @media(max-width:767px){.stat-value{font-size:1.4rem}.hero{padding:1.8rem 0 1.5rem}[class*="col-md-"]{width:100%;flex:0 0 100%}}
+  </style>
+</head>
+<body>
+
+<div id="loadingOverlay"><div class="spinner"></div></div>
+<div id="toast-container"></div>
+
+<!-- EDIT MODAL -->
+<div class="modal-bd" id="editModal">
+  <div class="modal-box">
+    <div class="modal-title"><i class="bi bi-pencil-square text-accent"></i><span id="modalTitle">Edit Item</span></div>
+    <input type="hidden" id="modalId">
+    <div class="alert-error" id="modalError"></div>
+    <div class="mb-3"><label class="form-label">Item Name</label><input type="text" id="modalName" class="form-control" placeholder="e.g. Ballpen (Blue)" maxlength="100"></div>
+    <div class="row g-3 mb-4">
+      <div class="col-6"><label class="form-label">Quantity</label><input type="number" id="modalQty" class="form-control" min="0" placeholder="0"></div>
+      <div class="col-6"><label class="form-label">Price (₱)</label><input type="number" id="modalPrice" class="form-control" min="0" step="0.01" placeholder="0.00"></div>
+    </div>
+    <div class="d-flex gap-2 justify-content-end">
+      <button class="btn btn-ghost" onclick="closeModal()"><i class="bi bi-x-lg"></i> Cancel</button>
+      <button class="btn btn-primary" onclick="saveModal()"><i class="bi bi-save"></i> Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW MODAL -->
+<div class="modal-bd" id="viewModal">
+  <div class="modal-box lg">
+    <div class="modal-title"><i class="bi bi-info-circle text-accent"></i><span id="viewModalTitle">Item Details</span></div>
+    <div id="viewModalBody"></div>
+    <div class="d-flex gap-2 justify-content-end mt-3">
+      <button class="btn btn-ghost" onclick="closeViewModal()"><i class="bi bi-x-lg"></i> Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-bd" id="confirmModal">
+  <div class="modal-box" style="max-width:400px;">
+    <div class="modal-title"><i class="bi bi-exclamation-triangle text-danger"></i> Confirm Delete</div>
+    <p id="confirmMsg" style="color:var(--muted);font-size:.9rem;margin-bottom:1.4rem;line-height:1.6;"></p>
+    <div class="d-flex gap-2 justify-content-end">
+      <button class="btn btn-ghost" onclick="closeConfirm()"><i class="bi bi-x-lg"></i> Cancel</button>
+      <button class="btn btn-danger" id="confirmOkBtn"><i class="bi bi-trash"></i> Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg">
+  <div class="container" style="display:flex;align-items:center;gap:1rem;">
+    <a class="navbar-brand" href="#" onclick="navigate('home');return false;">
+      <div class="brand-icon"><i class="bi bi-box-seam"></i></div>C.A.L.M Inventory
+    </a>
+    <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navNav"
+      style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:var(--rs);padding:.38rem .58rem;">
+      <i class="bi bi-list"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navNav" style="flex-grow:0;">
+      <ul class="navbar-nav ms-auto d-flex gap-1" style="flex-direction:row;list-style:none;">
+        <li><a class="nav-link active" id="nav-home"     href="#" onclick="navigate('home');return false;"><i class="bi bi-house"></i> Home</a></li>
+        <li><a class="nav-link"        id="nav-products" href="#" onclick="navigate('products');return false;"><i class="bi bi-bag"></i> Products</a></li>
+        <li><a class="nav-link"        id="nav-reports"  href="#" onclick="navigate('reports');return false;"><i class="bi bi-bar-chart"></i> Reports</a></li>
+        <li><a class="nav-link"        id="nav-about"    href="#" onclick="navigate('about');return false;"><i class="bi bi-people"></i> About</a></li>
+        <li><a class="nav-link"        id="nav-terms"    href="#" onclick="navigate('terms');return false;"><i class="bi bi-file-text"></i> Terms</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="container">
+      <p class="hero-eyebrow">C.A.L.M · Group 3 · Integrative Programming</p>
+      <h1 class="hero-title">Inventory <span>Management</span><br>System</h1>
+      <p class="hero-sub">Manage school supplies — fast, clean, reliable.</p>
+    </div>
+  </div>
+  <div class="container mt-page">
+    <div class="row g-3 mb-4" id="homeStats">
+      <div class="col-md-3 col-6"><div class="stat-card c-green"><div class="skel skel-card"></div></div></div>
+      <div class="col-md-3 col-6"><div class="stat-card c-purple"><div class="skel skel-card"></div></div></div>
+      <div class="col-md-3 col-6"><div class="stat-card c-amber"><div class="skel skel-card"></div></div></div>
+      <div class="col-md-3 col-6"><div class="stat-card c-red"><div class="skel skel-card"></div></div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <span id="formTitle"><i class="bi bi-plus-circle text-accent me-2"></i>Add New Item</span>
+        <button class="btn btn-ghost btn-sm" onclick="resetForm()"><i class="bi bi-x-lg"></i> Reset</button>
+      </div>
+      <div class="panel-body">
+        <div class="alert-error" id="formError"></div>
+        <input type="hidden" id="itemId">
+        <div class="row g-3 align-items-md-end">
+          <div class="col-md-4"><label class="form-label">Item Name</label><input type="text" id="name" class="form-control" placeholder="e.g. Ballpen (Blue)" maxlength="100"></div>
+          <div class="col-md-3"><label class="form-label">Quantity</label><input type="number" id="quantity" class="form-control" min="0" placeholder="0"></div>
+          <div class="col-md-3"><label class="form-label">Price (₱)</label><input type="number" id="price" class="form-control" min="0" step="0.01" placeholder="0.00"></div>
+          <div class="col-md-2"><button id="saveBtn" class="btn btn-success w-100" onclick="saveItem()"><i class="bi bi-save"></i> Save</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-body" style="padding:.7rem 1.2rem;">
+        <div class="row g-2 align-items-center">
+          <div class="col-md-5"><div class="sw"><i class="bi bi-search si"></i><input type="text" id="homeSearch" class="form-control" placeholder="Filter items by name…"></div></div>
+          <div class="col-md-3"><select id="homeFilter" class="form-select"><option value="all">All Stock Levels</option><option value="out">Out of Stock (0)</option><option value="low">Low Stock (1–10)</option><option value="ok">In Stock (&gt;10)</option></select></div>
+          <div class="col-md-4 d-flex gap-2 justify-content-md-end">
+            <button class="btn btn-ghost btn-sm" onclick="exportCSV('home')"><i class="bi bi-download"></i> CSV</button>
+            <button class="btn btn-ghost btn-sm" onclick="printTable()"><i class="bi bi-printer"></i> Print</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <span><i class="bi bi-table text-accent me-2"></i>Inventory Items</span>
+        <div class="d-flex align-items-center gap-2">
+          <span id="homeRowCount" style="font-size:.76rem;color:var(--muted);"></span>
+          <button class="btn btn-ghost btn-sm" onclick="forceRefresh()"><i class="bi bi-arrow-clockwise"></i></button>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr>
+            <th class="sortable" data-col="id"       data-page="home">ID</th>
+            <th class="sortable" data-col="name"     data-page="home">Name</th>
+            <th class="sortable" data-col="quantity" data-page="home">Qty</th>
+            <th class="text-end sortable" data-col="price" data-page="home">Price</th>
+            <th class="text-end">Subtotal</th><th class="text-center">Status</th><th class="text-center">Actions</th>
+          </tr></thead>
+          <tbody id="homeTable"><tr><td colspan="7" class="empty-state"><div class="skel skel-row"></div></td></tr></tbody>
+        </table>
+      </div>
+      <div class="pager-wrap" id="homePager"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCTS -->
+<div class="page" id="page-products">
+  <div class="container mt-page">
+    <div class="panel mb-3">
+      <div class="panel-body" style="padding:.7rem 1.2rem;">
+        <div class="row g-2 align-items-center">
+          <div class="col-md-6"><div class="sw"><i class="bi bi-search si"></i><input type="text" id="searchInput" class="form-control" placeholder="Search products by name…"></div></div>
+          <div class="col-md-6 d-flex gap-2 justify-content-md-end">
+            <button class="btn btn-ghost btn-sm" onclick="exportCSV('products')"><i class="bi bi-download"></i> CSV</button>
+            <button class="btn btn-ghost btn-sm" onclick="printTable('products')"><i class="bi bi-printer"></i> Print</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <span><i class="bi bi-bag text-accent me-2"></i>School Supplies Inventory</span>
+        <div class="d-flex align-items-center gap-2">
+          <span id="rowCount" style="font-size:.76rem;color:var(--muted);"></span>
+          <button class="btn btn-ghost btn-sm" onclick="forceRefresh()"><i class="bi bi-arrow-clockwise"></i></button>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr>
+            <th class="sortable" data-col="id"       data-page="products">ID</th>
+            <th class="sortable" data-col="name"     data-page="products">Name</th>
+            <th class="sortable" data-col="quantity" data-page="products">Qty</th>
+            <th class="text-end sortable" data-col="price" data-page="products">Price</th>
+            <th class="text-end">Subtotal</th><th class="text-center">Status</th><th class="text-center">Actions</th>
+          </tr></thead>
+          <tbody id="productTable"><tr><td colspan="7" class="empty-state">Loading…</td></tr></tbody>
+        </table>
+      </div>
+      <div class="pager-wrap" id="productPager"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REPORTS -->
+<div class="page" id="page-reports">
+  <div class="container mt-page">
+    <div class="row g-3 mb-4">
+      <div class="col-md-3 col-6"><div class="stat-card c-purple"><div class="stat-icon"><i class="bi bi-boxes"></i></div><div class="stat-label">Total Products</div><div class="stat-value" id="rptTotal">—</div></div></div>
+      <div class="col-md-3 col-6"><div class="stat-card c-green"><div class="stat-icon"><i class="bi bi-cash-coin"></i></div><div class="stat-label">Total Value</div><div class="stat-value">₱<span id="rptValue">—</span></div></div></div>
+      <div class="col-md-3 col-6"><div class="stat-card c-amber"><div class="stat-icon"><i class="bi bi-layers"></i></div><div class="stat-label">Total Units</div><div class="stat-value" id="rptQty">—</div></div></div>
+      <div class="col-md-3 col-6"><div class="stat-card c-red"><div class="stat-icon"><i class="bi bi-exclamation-triangle"></i></div><div class="stat-label">Low / Out Stock</div><div class="stat-value" id="rptLow">—</div></div></div>
+    </div>
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <div class="panel" style="height:100%;">
+          <div class="panel-header"><span><i class="bi bi-pie-chart text-accent me-2"></i>Stock Distribution</span></div>
+          <div class="chart-wrap"><canvas id="chartDoughnut"></canvas></div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="panel" style="height:100%;">
+          <div class="panel-header"><span><i class="bi bi-bar-chart-line text-accent me-2"></i>Top 8 Items by Value</span></div>
+          <div class="chart-wrap"><canvas id="chartBar"></canvas></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel mb-3">
+      <div class="panel-header">
+        <span><i class="bi bi-trophy text-accent me-2"></i>Top 5 by Inventory Value</span>
+        <button class="btn btn-ghost btn-sm" onclick="exportCSV('report')"><i class="bi bi-download"></i> Export CSV</button>
+      </div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>#</th><th>Name</th><th>Qty</th><th class="text-end">Unit Price</th><th class="text-end">Subtotal</th></tr></thead>
+          <tbody id="topTable"><tr><td colspan="5" class="empty-state">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><span><i class="bi bi-table text-accent me-2"></i>Full Item Report</span></div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>ID</th><th>Name</th><th>Qty</th><th class="text-end">Unit Price</th><th class="text-end">Subtotal</th><th class="text-center">Status</th></tr></thead>
+          <tbody id="reportTable"><tr><td colspan="6" class="empty-state">Loading…</td></tr></tbody>
+          <tfoot id="reportFoot"></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<div class="page" id="page-about">
+  <div class="container mt-page">
+    <div class="panel mb-4">
+      <div class="panel-header"><span><i class="bi bi-info-circle text-accent me-2"></i>About This System</span></div>
+      <div class="panel-body">
+        <p style="color:var(--muted);line-height:1.75;margin-bottom:1.2rem;">A full-stack web-based inventory system built by <strong style="color:var(--text);">C.A.L.M Group 3</strong> for managing school supplies efficiently. Demonstrates end-to-end integration from a PHP REST API to a responsive frontend with live charts.</p>
+        <div class="d-flex" style="flex-wrap:wrap;">
+          <span class="tech-badge"><i class="bi bi-filetype-html" style="color:#e44d26;"></i> HTML5</span>
+          <span class="tech-badge"><i class="bi bi-bootstrap" style="color:#7952b3;"></i> Bootstrap 5.3</span>
+          <span class="tech-badge"><i class="bi bi-filetype-js" style="color:#f7df1e;"></i> JavaScript / Fetch API</span>
+          <span class="tech-badge"><i class="bi bi-filetype-php" style="color:#777bb4;"></i> PHP 8 + PDO</span>
+          <span class="tech-badge"><i class="bi bi-database" style="color:#00758f;"></i> MySQL</span>
+          <span class="tech-badge"><i class="bi bi-graph-up" style="color:var(--success);"></i> Chart.js 4</span>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><span><i class="bi bi-people text-accent me-2"></i>Group 3 — C.A.L.M</span></div>
+      <div class="panel-body">
+        <div class="row g-3">
+          <div class="col-6 col-md-3"><div class="member-card"><div class="member-avatar">👩‍💻</div><div class="member-name">Chanelle Christi B. Apostol</div></div></div>
+          <div class="col-6 col-md-3"><div class="member-card"><div class="member-avatar">👩‍💻</div><div class="member-name">Michelle Mogol</div></div></div>
+          <div class="col-6 col-md-3"><div class="member-card"><div class="member-avatar">👩‍💻</div><div class="member-name">Airen Lasic</div></div></div>
+          <div class="col-6 col-md-3"><div class="member-card"><div class="member-avatar">👨‍💻</div><div class="member-name">Jerson Linga</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TERMS -->
+<div class="page" id="page-terms">
+  <div class="container mt-page">
+    <div class="panel">
+      <div class="panel-header"><span><i class="bi bi-file-text text-accent me-2"></i>Terms &amp; Conditions</span></div>
+      <div class="panel-body">
+        <div class="terms-sec"><h5><span style="background:var(--adim);padding:2px 8px;border-radius:4px;font-size:.68rem;">01</span> Acceptance of Terms</h5><p>By accessing and using this Inventory System, you agree to comply with these terms and conditions.</p></div>
+        <div class="terms-sec"><h5><span style="background:var(--adim);padding:2px 8px;border-radius:4px;font-size:.68rem;">02</span> User Responsibilities</h5><ul><li>Provide accurate and complete information.</li><li>Maintain confidentiality of your account.</li><li>Be responsible for all activities under your account.</li></ul></div>
+        <div class="terms-sec"><h5><span style="background:var(--adim);padding:2px 8px;border-radius:4px;font-size:.68rem;">03</span> Proper Use</h5><p>The system is intended for managing inventory items. Misuse is strictly prohibited.</p></div>
+        <div class="terms-sec"><h5><span style="background:var(--adim);padding:2px 8px;border-radius:4px;font-size:.68rem;">04</span> Data Accuracy</h5><p>The system depends on user input. The administrator is not responsible for incorrect data entries.</p></div>
+        <div class="terms-sec"><h5><span style="background:var(--adim);padding:2px 8px;border-radius:4px;font-size:.68rem;">05</span> Access and Security</h5><p>Unauthorized access or security breach attempts are prohibited.</p></div>
+        <div class="terms-sec"><h5><span style="background:var(--adim);padding:2px 8px;border-radius:4px;font-size:.68rem;">06</span> System Availability</h5><p>The system may be temporarily unavailable due to maintenance or technical issues.</p></div>
+        <div class="terms-sec"><h5><span style="background:var(--adim);padding:2px 8px;border-radius:4px;font-size:.68rem;">07</span> Data Privacy</h5><p>User data will remain confidential and will not be shared without consent unless required by law.</p></div>
+        <div class="terms-sec"><h5><span style="background:var(--adim);padding:2px 8px;border-radius:4px;font-size:.68rem;">08</span> Modifications</h5><p>Terms may be updated at any time. Continued use means acceptance of changes.</p></div>
+        <div class="terms-sec"><h5><span style="background:var(--adim);padding:2px 8px;border-radius:4px;font-size:.68rem;">09</span> Termination</h5><p>Accounts may be suspended or terminated if these terms are violated.</p></div>
+        <div class="terms-sec"><h5><span style="background:var(--adim);padding:2px 8px;border-radius:4px;font-size:.68rem;">10</span> Limitation of Liability</h5><p>The system is provided "as is" without warranties. The administrator is not liable for damages.</p></div>
+        <hr style="border-color:var(--border);margin:1.4rem 0;">
+        <div class="d-flex align-items-center gap-2" style="flex-wrap:wrap;">
+          <div class="form-check mb-0">
+            <input class="form-check-input" type="checkbox" id="agreeCheck">
+            <label class="form-check-label" for="agreeCheck">I have read and agree to these Terms &amp; Conditions.</label>
+          </div>
+          <button class="btn btn-primary" onclick="acceptTerms()"><i class="bi bi-check-circle"></i> Accept &amp; Go to Dashboard</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>Project in Integrative Programming · Group 3</p>
+  <p style="margin-top:.22rem;">© 2026 C.A.L.M Group · <a href="#" onclick="navigate('terms');return false;">Terms &amp; Conditions</a></p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+'use strict';
+const API           = 'api.php';
+const ROWS          = 10;
+const LOW_QTY       = 10;
+
+let allItems        = [];
+let productSearch   = '';
+const sortSt        = { home:{col:'id',dir:'asc'}, products:{col:'id',dir:'asc'} };
+const pageSt        = { home:1, products:1 };
+let doughnutChart   = null;
+let barChart        = null;
+
+const overlay  = document.getElementById('loadingOverlay');
+const showLoad = () => overlay.classList.add('active');
+const hideLoad = () => overlay.classList.remove('active');
+
+/* ── helpers ── */
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function toast(msg,type='success'){
+  const icons={success:'check-circle-fill',danger:'exclamation-circle-fill',warning:'exclamation-triangle-fill',info:'info-circle-fill'};
+  const el=document.createElement('div');
+  el.className=`toast-item t-${type}`;
+  el.innerHTML=`<i class="bi bi-${icons[type]||'info-circle-fill'}" style="color:var(--${type==='success'?'success':type==='warning'?'warning':type==='info'?'info':'danger'});flex-shrink:0;"></i><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(()=>el.remove(),3500);
+}
+
+function showErr(id,msg){const e=document.getElementById(id);e.textContent=msg;e.classList.add('show');}
+function clearErr(id){const e=document.getElementById(id);e.textContent='';e.classList.remove('show');}
+
+function stockSt(qty){
+  qty=Number(qty);
+  if(qty===0)return{label:'Out of Stock',cls:'out-stock',bc:'zero'};
+  if(qty<=LOW_QTY)return{label:'Low Stock',cls:'low-stock',bc:'low'};
+  return{label:'In Stock',cls:'in-stock',bc:''};
+}
+const stBadge = qty=>{ const s=stockSt(qty); return `<span class="status-badge ${s.cls}">${s.label}</span>`; };
+const qBadge  = qty=>{ const s=stockSt(qty); return `<span class="qty-badge ${s.bc}">${qty}</span>`; };
+
+/* ── skeleton ── */
+function skelRows(cols,n=5){
+  return Array.from({length:n},()=>
+    `<tr>${Array.from({length:cols},()=>`<td><div class="skel skel-text" style="width:${60+Math.random()*35|0}%;"></div></td>`).join('')}</tr>`
+  ).join('');
+}
+
+/* ── routing ── */
+const PAGES=['home','products','reports','about','terms'];
+function navigate(page){
+  PAGES.forEach(p=>{
+    document.getElementById('page-'+p).classList.toggle('active',p===page);
+    const n=document.getElementById('nav-'+p);
+    if(n) n.classList.toggle('active',p===page);
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(page==='home')    loadItems();
+  if(page==='products'){productSearch='';document.getElementById('searchInput').value='';loadProducts();}
+  if(page==='reports') loadReport();
+}
+
+/* ── sorting ── */
+document.querySelectorAll('.tbl thead th.sortable').forEach(th=>{
+  th.addEventListener('click',()=>{
+    const col=th.dataset.col,pg=th.dataset.page,st=sortSt[pg];
+    st.dir=st.col===col?(st.dir==='asc'?'desc':'asc'):'asc';
+    st.col=col; pageSt[pg]=1;
+    updSortH(pg);
+    if(pg==='home')     renderHF();
+    if(pg==='products') renderPF();
+  });
+});
+
+function updSortH(pg){
+  document.querySelectorAll(`th.sortable[data-page="${pg}"]`).forEach(th=>{
+    th.classList.remove('sort-asc','sort-desc');
+    if(th.dataset.col===sortSt[pg].col) th.classList.add(sortSt[pg].dir==='asc'?'sort-asc':'sort-desc');
+  });
+}
+
+function sortIt(items,pg){
+  const{col,dir}=sortSt[pg];
+  return[...items].sort((a,b)=>{
+    let av=a[col],bv=b[col];
+    if(['id','quantity','price'].includes(col)){av=Number(av);bv=Number(bv);}
+    else{av=String(av).toLowerCase();bv=String(bv).toLowerCase();}
+    return av<bv?(dir==='asc'?-1:1):av>bv?(dir==='asc'?1:-1):0;
+  });
+}
+
+/* ── pagination ── */
+function renderPager(elId,total,cur,fn){
+  const tp=Math.ceil(total/ROWS)||1,el=document.getElementById(elId);
+  if(!el) return;
+  const s=(cur-1)*ROWS+1,e=Math.min(cur*ROWS,total);
+  let btns='';
+  for(let i=1;i<=tp;i++){
+    if(tp>7&&i>2&&i<tp-1&&Math.abs(i-cur)>1){if(i===3||i===tp-2)btns+=`<span class="pg-btn" style="cursor:default;border:none;pointer-events:none;">…</span>`;continue;}
+    btns+=`<button class="pg-btn ${i===cur?'active':''}" onclick="${fn}(${i})">${i}</button>`;
+  }
+  el.innerHTML=`<span>${total?`${s}–${e} of ${total}`:'0 items'}</span><div class="pager-btns"><button class="pg-btn" ${cur<=1?'disabled':''} onclick="${fn}(${cur-1})"><i class="bi bi-chevron-left"></i></button>${btns}<button class="pg-btn" ${cur>=tp?'disabled':''} onclick="${fn}(${cur+1})"><i class="bi bi-chevron-right"></i></button></div>`;
+}
+
+/* ── fetch ── */
+async function fetchAll(){ const r=await fetch(API); if(!r.ok) throw new Error('Server error '+r.status); return r.json(); }
+
+async function forceRefresh(){
+  allItems=[];
+  const pg=PAGES.find(p=>document.getElementById('page-'+p).classList.contains('active'));
+  if(pg==='home')    await loadItems();
+  if(pg==='products')await loadProducts();
+  if(pg==='reports') await loadReport();
+  toast('Refreshed ✓','info');
+}
+
+/* ── HOME ── */
+async function loadItems(){
+  // Skeleton stat cards
+  document.getElementById('homeStats').innerHTML=`
+    <div class="col-md-3 col-6"><div class="stat-card c-green"><div class="skel skel-card"></div></div></div>
+    <div class="col-md-3 col-6"><div class="stat-card c-purple"><div class="skel skel-card"></div></div></div>
+    <div class="col-md-3 col-6"><div class="stat-card c-amber"><div class="skel skel-card"></div></div></div>
+    <div class="col-md-3 col-6"><div class="stat-card c-red"><div class="skel skel-card"></div></div></div>`;
+  // Skeleton table rows
+  document.getElementById('homeTable').innerHTML=skelRows(7,6);
+  showLoad();
+  try{
+    allItems=await fetchAll();
+    renderStats(allItems);
+    pageSt.home=1;
+    renderHF();
+  }catch(err){
+    document.getElementById('homeStats').innerHTML=`<div class="col-12"><p class="text-danger" style="font-size:.855rem;"><i class="bi bi-exclamation-circle me-1"></i>${esc(err.message)}</p></div>`;
+    document.getElementById('homeTable').innerHTML=`<tr><td colspan="7" class="empty-state text-danger"><i class="bi bi-exclamation-circle me-2"></i>${esc(err.message)}</td></tr>`;
+    toast(err.message,'danger');
+  }finally{hideLoad();}
+}
+
+function renderStats(items){
+  const tq=items.reduce((s,i)=>s+Number(i.quantity),0);
+  const tv=items.reduce((s,i)=>s+i.quantity*i.price,0);
+  const lc=items.filter(i=>Number(i.quantity)<=LOW_QTY).length;
+  document.getElementById('homeStats').innerHTML=`
+    <div class="col-md-3 col-6"><div class="stat-card c-green"><div class="stat-icon"><i class="bi bi-boxes"></i></div><div class="stat-label">Total Products</div><div class="stat-value" id="statTotal">${items.length}</div></div></div>
+    <div class="col-md-3 col-6"><div class="stat-card c-purple"><div class="stat-icon"><i class="bi bi-layers"></i></div><div class="stat-label">Total Stock</div><div class="stat-value" id="statQty">${tq}</div></div></div>
+    <div class="col-md-3 col-6"><div class="stat-card c-amber"><div class="stat-icon"><i class="bi bi-cash-coin"></i></div><div class="stat-label">Inventory Value</div><div class="stat-value">₱<span id="statValue">${tv.toFixed(2)}</span></div></div></div>
+    <div class="col-md-3 col-6"><div class="stat-card c-red"><div class="stat-icon"><i class="bi bi-exclamation-triangle"></i></div><div class="stat-label">Low Stock Items</div><div class="stat-value" id="statLow">${lc}</div></div></div>`;
+}
+
+function renderHF(){
+  const search=(document.getElementById('homeSearch').value||'').trim().toLowerCase();
+  const filter=document.getElementById('homeFilter').value;
+  let items=allItems.filter(item=>{
+    const ms=!search||item.name.toLowerCase().includes(search);
+    const qty=Number(item.quantity);
+    const mf=filter==='out'?qty===0:filter==='low'?qty>0&&qty<=LOW_QTY:filter==='ok'?qty>LOW_QTY:true;
+    return ms&&mf;
+  });
+  items=sortIt(items,'home');
+  document.getElementById('homeRowCount').textContent=`${items.length} item${items.length!==1?'s':''}`;
+  const pg=pageSt.home;
+  renderHT(items.slice((pg-1)*ROWS,pg*ROWS));
+  renderPager('homePager',items.length,pg,'goHP');
+}
+window.goHP=p=>{pageSt.home=p;renderHF();};
+
+function renderHT(items){
+  const t=document.getElementById('homeTable');
+  if(!items.length){t.innerHTML=`<tr><td colspan="7" class="empty-state">No items match your filters.</td></tr>`;return;}
+  t.innerHTML=items.map(item=>`
+    <tr class="${item.quantity==0?'row-out':item.quantity<=LOW_QTY?'row-low':''}">
+      <td><span class="id-badge">#${item.id}</span></td>
+      <td style="font-weight:500;">${esc(item.name)}</td>
+      <td>${qBadge(item.quantity)}</td>
+      <td class="text-end fw-mono">₱${parseFloat(item.price).toFixed(2)}</td>
+      <td class="text-end fw-mono" style="color:var(--success);">₱${(item.quantity*item.price).toFixed(2)}</td>
+      <td class="text-center">${stBadge(item.quantity)}</td>
+      <td class="text-center">
+        <button class="btn btn-info btn-sm btn-icon" onclick="viewItem(${item.id})" title="View"><i class="bi bi-eye"></i></button>
+        <button class="btn btn-warning btn-sm btn-icon ms-1" onclick="editItem(${item.id})" title="Edit"><i class="bi bi-pencil"></i></button>
+        <button class="btn btn-danger btn-sm btn-icon ms-1" onclick="confirmDel(${item.id},'${esc(item.name)}','home')" title="Delete"><i class="bi bi-trash"></i></button>
+      </td>
+    </tr>`).join('');
+}
+
+document.getElementById('homeSearch').addEventListener('input',()=>{pageSt.home=1;renderHF();});
+document.getElementById('homeFilter').addEventListener('change',()=>{pageSt.home=1;renderHF();});
+
+/* ── CRUD ── */
+async function saveItem(){
+  clearErr('formError');
+  const id=document.getElementById('itemId').value;
+  const name=document.getElementById('name').value.trim();
+  const quantity=parseInt(document.getElementById('quantity').value,10);
+  const price=parseFloat(document.getElementById('price').value);
+  if(!name)                          return showErr('formError','Item name is required.');
+  if(isNaN(quantity)||quantity<0)    return showErr('formError','Enter a valid quantity (≥ 0).');
+  if(isNaN(price)||price<0)          return showErr('formError','Enter a valid price (≥ 0).');
+  showLoad();
+  try{
+    const res=await fetch(id?`${API}?id=${id}`:API,{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,quantity,price})});
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error||'Save failed.');
+    toast(id?`"${esc(data.name)}" updated ✓`:`"${esc(data.name)}" added ✓`);
+    resetForm();
+    // BUG FIX: update cache — no extra API call needed
+    if(id){const idx=allItems.findIndex(i=>i.id==id);if(idx!==-1)allItems[idx]=data;}
+    else allItems.push(data);
+    renderStats(allItems);
+    renderHF();
+    renderPF();
+  }catch(err){showErr('formError',err.message);toast(err.message,'danger');}
+  finally{hideLoad();}
+}
+
+async function editItem(id){
+  showLoad();
+  try{
+    const res=await fetch(`${API}?id=${id}`);
+    const item=await res.json();
+    if(!res.ok) throw new Error(item.error||'Not found.');
+    if(document.getElementById('page-home').classList.contains('active')){
+      document.getElementById('itemId').value=item.id;
+      document.getElementById('name').value=item.name;
+      document.getElementById('quantity').value=item.quantity;
+      document.getElementById('price').value=item.price;
+      document.getElementById('formTitle').innerHTML=`<i class="bi bi-pencil text-accent me-2"></i>Editing: <em style="font-weight:400;">${esc(item.name)}</em>`;
+      document.getElementById('saveBtn').innerHTML='<i class="bi bi-save"></i> Update';
+      clearErr('formError');
+      window.scrollTo({top:0,behavior:'smooth'});
+    }else{openModal(item);}
+  }catch(err){toast(err.message,'danger');}
+  finally{hideLoad();}
+}
+
+function confirmDel(id,name,ctx){
+  document.getElementById('confirmMsg').textContent=`Delete "${name}"? This cannot be undone.`;
+  document.getElementById('confirmOkBtn').onclick=()=>{closeConfirm();doDelete(id,name);};
+  document.getElementById('confirmModal').classList.add('active');
+}
+function closeConfirm(){document.getElementById('confirmModal').classList.remove('active');}
+
+async function doDelete(id,name){
+  showLoad();
+  try{
+    const res=await fetch(`${API}?id=${id}`,{method:'DELETE'});
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error||'Delete failed.');
+    toast(`"${esc(name)}" deleted.`,'warning');
+    // BUG FIX: mutate cache only — no double-fetch
+    allItems=allItems.filter(i=>i.id!=id);
+    renderStats(allItems);
+    renderHF();
+    renderPF();
+  }catch(err){toast(err.message,'danger');}
+  finally{hideLoad();}
+}
+
+function resetForm(){
+  ['itemId','name','quantity','price'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('formTitle').innerHTML='<i class="bi bi-plus-circle text-accent me-2"></i>Add New Item';
+  document.getElementById('saveBtn').innerHTML='<i class="bi bi-save"></i> Save';
+  clearErr('formError');
+}
+
+/* ── VIEW MODAL ── */
+async function viewItem(id){
+  showLoad();
+  try{
+    const res=await fetch(`${API}?id=${id}`);
+    const item=await res.json();
+    if(!res.ok) throw new Error(item.error||'Not found.');
+    document.getElementById('viewModalTitle').textContent=`Item #${item.id} — ${item.name}`;
+    document.getElementById('viewModalBody').innerHTML=`
+      <div class="row g-3" style="font-size:.88rem;">
+        <div class="col-6"><div class="stat-label">Item ID</div><div>#${item.id}</div></div>
+        <div class="col-6"><div class="stat-label">Name</div><div style="font-weight:600;">${esc(item.name)}</div></div>
+        <div class="col-6"><div class="stat-label">Quantity</div><div>${qBadge(item.quantity)}</div></div>
+        <div class="col-6"><div class="stat-label">Unit Price</div><div class="fw-mono">₱${parseFloat(item.price).toFixed(2)}</div></div>
+        <div class="col-6"><div class="stat-label">Subtotal</div><div class="fw-mono" style="color:var(--success);">₱${(item.quantity*item.price).toFixed(2)}</div></div>
+        <div class="col-6"><div class="stat-label">Status</div><div>${stBadge(item.quantity)}</div></div>
+        ${item.created_at?`<div class="col-6"><div class="stat-label">Created</div><div style="color:var(--muted);font-size:.8rem;">${item.created_at}</div></div>`:''}
+        ${item.updated_at?`<div class="col-6"><div class="stat-label">Last Updated</div><div style="color:var(--muted);font-size:.8rem;">${item.updated_at}</div></div>`:''}
+      </div>`;
+    document.getElementById('viewModal').classList.add('active');
+  }catch(err){toast(err.message,'danger');}
+  finally{hideLoad();}
+}
+function closeViewModal(){document.getElementById('viewModal').classList.remove('active');}
+document.getElementById('viewModal').addEventListener('click',e=>{if(e.target===document.getElementById('viewModal'))closeViewModal();});
+
+/* ── PRODUCTS ── */
+async function loadProducts(){
+  document.getElementById('productTable').innerHTML=skelRows(7,6);
+  showLoad();
+  try{
+    if(!allItems.length){allItems=await fetchAll();renderStats(allItems);}
+    pageSt.products=1;
+    renderPF();
+  }catch(err){
+    document.getElementById('productTable').innerHTML=`<tr><td colspan="7" class="empty-state text-danger"><i class="bi bi-exclamation-circle me-2"></i>${esc(err.message)}</td></tr>`;
+    toast(err.message,'danger');
+  }finally{hideLoad();}
+}
+
+function renderPF(){
+  const s=productSearch.toLowerCase();
+  let items=s?allItems.filter(i=>i.name.toLowerCase().includes(s)):allItems;
+  items=sortIt(items,'products');
+  document.getElementById('rowCount').textContent=`${items.length} item${items.length!==1?'s':''}`;
+  const pg=pageSt.products;
+  renderPT(items.slice((pg-1)*ROWS,pg*ROWS));
+  renderPager('productPager',items.length,pg,'goPP');
+}
+window.goPP=p=>{pageSt.products=p;renderPF();};
+
+function renderPT(items){
+  const t=document.getElementById('productTable');
+  if(!items.length){t.innerHTML=`<tr><td colspan="7" class="empty-state">No products found.</td></tr>`;return;}
+  t.innerHTML=items.map(item=>`
+    <tr class="${item.quantity==0?'row-out':item.quantity<=LOW_QTY?'row-low':''}">
+      <td><span class="id-badge">#${item.id}</span></td>
+      <td style="font-weight:500;">${esc(item.name)}</td>
+      <td>${qBadge(item.quantity)}</td>
+      <td class="text-end fw-mono">₱${parseFloat(item.price).toFixed(2)}</td>
+      <td class="text-end fw-mono" style="color:var(--success);">₱${(item.quantity*item.price).toFixed(2)}</td>
+      <td class="text-center">${stBadge(item.quantity)}</td>
+      <td class="text-center">
+        <button class="btn btn-info btn-sm btn-icon" onclick="viewItem(${item.id})" title="View"><i class="bi bi-eye"></i></button>
+        <button class="btn btn-warning btn-sm btn-icon ms-1" onclick="openModalById(${item.id})" title="Edit"><i class="bi bi-pencil"></i></button>
+        <button class="btn btn-danger btn-sm btn-icon ms-1" onclick="confirmDel(${item.id},'${esc(item.name)}','products')" title="Delete"><i class="bi bi-trash"></i></button>
+      </td>
+    </tr>`).join('');
+}
+
+let _st;
+document.getElementById('searchInput').addEventListener('input',function(){
+  clearTimeout(_st);
+  _st=setTimeout(()=>{productSearch=this.value.trim();pageSt.products=1;renderPF();},300);
+});
+
+/* ── EDIT MODAL ── */
+function openModal(item){
+  clearErr('modalError');
+  document.getElementById('modalId').value=item.id;
+  document.getElementById('modalName').value=item.name;
+  document.getElementById('modalQty').value=item.quantity;
+  document.getElementById('modalPrice').value=item.price;
+  document.getElementById('modalTitle').textContent=`Edit: ${item.name}`;
+  document.getElementById('editModal').classList.add('active');
+}
+async function openModalById(id){
+  showLoad();
+  try{const res=await fetch(`${API}?id=${id}`);const item=await res.json();if(!res.ok)throw new Error(item.error||'Not found.');openModal(item);}
+  catch(err){toast(err.message,'danger');}finally{hideLoad();}
+}
+function closeModal(){document.getElementById('editModal').classList.remove('active');clearErr('modalError');}
+document.getElementById('editModal').addEventListener('click',e=>{if(e.target===document.getElementById('editModal'))closeModal();});
+
+async function saveModal(){
+  clearErr('modalError');
+  const id=document.getElementById('modalId').value;
+  const name=document.getElementById('modalName').value.trim();
+  const quantity=parseInt(document.getElementById('modalQty').value,10);
+  const price=parseFloat(document.getElementById('modalPrice').value);
+  if(!name)                       return showErr('modalError','Item name is required.');
+  if(isNaN(quantity)||quantity<0) return showErr('modalError','Enter a valid quantity (≥ 0).');
+  if(isNaN(price)||price<0)       return showErr('modalError','Enter a valid price (≥ 0).');
+  showLoad();
+  try{
+    const res=await fetch(`${API}?id=${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,quantity,price})});
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error||'Update failed.');
+    toast(`"${esc(data.name)}" updated ✓`);
+    closeModal();
+    const idx=allItems.findIndex(i=>i.id==id);
+    if(idx!==-1) allItems[idx]=data;
+    renderStats(allItems);
+    renderPF();
+    renderHF();
+  }catch(err){showErr('modalError',err.message);toast(err.message,'danger');}
+  finally{hideLoad();}
+}
+
+/* ── REPORTS + CHARTS ── */
+async function loadReport(){
+  try{
+    if(!allItems.length){allItems=await fetchAll();renderStats(allItems);}
+    const items=allItems;
+    const tq=items.reduce((s,i)=>s+Number(i.quantity),0);
+    const tv=items.reduce((s,i)=>s+i.quantity*i.price,0);
+    const lc=items.filter(i=>Number(i.quantity)<=LOW_QTY).length;
+
+    document.getElementById('rptTotal').textContent=items.length;
+    document.getElementById('rptValue').textContent=tv.toFixed(2);
+    document.getElementById('rptQty').textContent=tq;
+    document.getElementById('rptLow').textContent=lc;
+
+    // Top 5
+    const top5=[...items].sort((a,b)=>b.quantity*b.price-a.quantity*a.price).slice(0,5);
+    document.getElementById('topTable').innerHTML=top5.length
+      ?top5.map((item,i)=>`<tr><td><strong style="color:var(--accent);">${i+1}</strong></td><td style="font-weight:500;">${esc(item.name)}</td><td>${qBadge(item.quantity)}</td><td class="text-end fw-mono">₱${parseFloat(item.price).toFixed(2)}</td><td class="text-end fw-mono" style="color:var(--success);">₱${(item.quantity*item.price).toFixed(2)}</td></tr>`).join('')
+      :`<tr><td colspan="5" class="empty-state">No data.</td></tr>`;
+
+    // Full report
+    const tbody=document.getElementById('reportTable');
+    if(!items.length){tbody.innerHTML=`<tr><td colspan="6" class="empty-state">No data.</td></tr>`;document.getElementById('reportFoot').innerHTML='';return;}
+    tbody.innerHTML=items.map(item=>`
+      <tr class="${item.quantity==0?'row-out':item.quantity<=LOW_QTY?'row-low':''}">
+        <td><span class="id-badge">#${item.id}</span></td>
+        <td style="font-weight:500;">${esc(item.name)}</td>
+        <td>${qBadge(item.quantity)}</td>
+        <td class="text-end fw-mono">₱${parseFloat(item.price).toFixed(2)}</td>
+        <td class="text-end fw-mono" style="color:var(--success);">₱${(item.quantity*item.price).toFixed(2)}</td>
+        <td class="text-center">${stBadge(item.quantity)}</td>
+      </tr>`).join('');
+    document.getElementById('reportFoot').innerHTML=`
+      <tr><td colspan="2" class="text-end" style="color:var(--muted);">TOTALS</td>
+      <td>${qBadge(tq)}</td><td></td>
+      <td class="text-end fw-mono" style="color:var(--warning);font-size:1rem;">₱${tv.toFixed(2)}</td>
+      <td></td></tr>`;
+
+    drawCharts(items);
+  }catch(err){
+    document.getElementById('reportTable').innerHTML=`<tr><td colspan="6" class="empty-state text-danger"><i class="bi bi-exclamation-circle me-2"></i>${esc(err.message)}</td></tr>`;
+  }
+}
+
+function drawCharts(items){
+  const tickCfg={color:'#6a6a9a',font:{family:'Space Grotesk',size:10}};
+  const gridCfg={color:'rgba(42,42,80,.6)'};
+
+  // Doughnut
+  const inS =items.filter(i=>Number(i.quantity)>LOW_QTY).length;
+  const lowS=items.filter(i=>Number(i.quantity)>0&&Number(i.quantity)<=LOW_QTY).length;
+  const outS=items.filter(i=>Number(i.quantity)===0).length;
+  if(doughnutChart) doughnutChart.destroy();
+  doughnutChart=new Chart(document.getElementById('chartDoughnut'),{
+    type:'doughnut',
+    data:{
+      labels:['In Stock','Low Stock','Out of Stock'],
+      datasets:[{
+        data:[inS,lowS,outS],
+        backgroundColor:['rgba(34,211,160,.7)','rgba(245,166,35,.7)','rgba(255,77,109,.7)'],
+        borderColor:['rgba(34,211,160,1)','rgba(245,166,35,1)','rgba(255,77,109,1)'],
+        borderWidth:2,hoverOffset:8,
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{position:'bottom',labels:{color:'#6a6a9a',padding:16,font:{family:'Space Grotesk',size:12}}},
+        tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed} item${ctx.parsed!==1?'s':''}`}},
+      },
+      cutout:'62%',
+      animation:{animateScale:true,duration:900},
+    }
+  });
+
+  // Bar
+  const top8=[...items].sort((a,b)=>b.quantity*b.price-a.quantity*a.price).slice(0,8);
+  if(barChart) barChart.destroy();
+  barChart=new Chart(document.getElementById('chartBar'),{
+    type:'bar',
+    data:{
+      labels:top8.map(i=>i.name.length>15?i.name.slice(0,15)+'…':i.name),
+      datasets:[{
+        label:'Value (₱)',
+        data:top8.map(i=>+(i.quantity*i.price).toFixed(2)),
+        backgroundColor:'rgba(108,99,255,.65)',
+        borderColor:'rgba(108,99,255,1)',
+        borderWidth:2,borderRadius:6,
+        hoverBackgroundColor:'rgba(108,99,255,.9)',
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>` ₱${ctx.parsed.y.toFixed(2)}`}},
+      },
+      scales:{
+        x:{ticks:tickCfg,grid:gridCfg},
+        y:{ticks:{...tickCfg,callback:v=>'₱'+v},grid:gridCfg},
+      },
+      animation:{duration:900},
+    }
+  });
+}
+
+/* ── EXPORT CSV ── */
+function exportCSV(ctx='home'){
+  if(!allItems.length){toast('No data to export.','warning');return;}
+  let items=ctx==='products'&&productSearch?allItems.filter(i=>i.name.toLowerCase().includes(productSearch.toLowerCase())):allItems;
+  const tq=items.reduce((s,i)=>s+Number(i.quantity),0);
+  const tv=items.reduce((s,i)=>s+i.quantity*i.price,0);
+  const rows=[
+    ['ID','Name','Quantity','Unit Price (PHP)','Subtotal (PHP)','Status'],
+    ...items.map(i=>[i.id,i.name,i.quantity,parseFloat(i.price).toFixed(2),(i.quantity*i.price).toFixed(2),stockSt(i.quantity).label]),
+    ['','TOTAL',tq,'',tv.toFixed(2),''],
+  ];
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`calm_inventory_${new Date().toISOString().slice(0,10)}.csv`;a.click();
+  URL.revokeObjectURL(url);
+  toast('CSV exported ✓','info');
+}
+
+/* ── PRINT ── */
+function printTable(ctx='home'){
+  const items=ctx==='products'&&productSearch?allItems.filter(i=>i.name.toLowerCase().includes(productSearch.toLowerCase())):allItems;
+  const tv=items.reduce((s,i)=>s+i.quantity*i.price,0);
+  const tq=items.reduce((s,i)=>s+Number(i.quantity),0);
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>C.A.L.M Inventory</title>
+  <style>body{font-family:Arial,sans-serif;font-size:12px;}h2{margin-bottom:4px;}p{margin:0 0 12px;color:#666;}
+  table{width:100%;border-collapse:collapse;}th,td{border:1px solid #ccc;padding:6px 10px;text-align:left;}
+  th{background:#f0f0f0;font-weight:bold;}tr:nth-child(even)td{background:#fafafa;}tfoot td{background:#f0f0f0;font-weight:bold;}</style>
+  </head><body><h2>C.A.L.M Inventory System</h2><p>Generated: ${new Date().toLocaleString()}</p>
+  <table><thead><tr><th>#</th><th>Name</th><th>Qty</th><th>Unit Price</th><th>Subtotal</th><th>Status</th></tr></thead>
+  <tbody>${items.map((i,x)=>`<tr><td>${x+1}</td><td>${i.name}</td><td>${i.quantity}</td><td>₱${parseFloat(i.price).toFixed(2)}</td><td>₱${(i.quantity*i.price).toFixed(2)}</td><td>${stockSt(i.quantity).label}</td></tr>`).join('')}</tbody>
+  <tfoot><tr><td colspan="2">TOTAL</td><td>${tq}</td><td></td><td>₱${tv.toFixed(2)}</td><td></td></tr></tfoot>
+  </table></body></html>`);
+  win.document.close();win.print();
+}
+
+/* ── TERMS ── */
+function acceptTerms(){
+  if(!document.getElementById('agreeCheck').checked){toast('Please agree first.','warning');return;}
+  navigate('home');toast('Terms accepted. Welcome!');
+}
+
+/* ── ESC closes all modals ── */
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape') return;
+  closeModal();closeViewModal();closeConfirm();
+});
+
+/* ── INIT ── */
+updSortH('home');
+updSortH('products');
+loadItems();
+</script>
+</body>
+</html>
